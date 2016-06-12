@@ -1,0 +1,77 @@
+---
+# tasks to configure owncloud logins for users in ldap directory
+
+- name: ensure mysql is running
+  service:
+    name: mysql
+    state: started
+  notify: stop mysql
+  tags: ldap
+
+- name: enable user_ldap module
+  command: "su -s {{ bash_path }} -c \"{{ php_path }} {{ occ_path }} app:enable {{ item }}\" {{ occ_user }}"
+  with_items:
+    - user_ldap
+  tags: ldap
+
+- name: setup ldap config in database
+  command: "{{ mysql_path }} --defaults-file={{ mysql_defaults_path }} --batch --execute \"insert into owncloud.appconfig set appid='user_ldap', configkey='{{ item.cfgkey }}', configvalue='{{ item.cfgval }}' on duplicate key update configvalue='{{ item.cfgval }}';\""
+  with_items:
+    - { cfgkey: "ldap_agent_password",
+        cfgval: "{{ ldap_owncloudpw | b64encode }}"
+      }
+    - { cfgkey: "ldap_base",
+        cfgval: "{{ ldap_basedn }}"
+      }
+    - { cfgkey: "ldap_base_groups",
+        cfgval: "{{ ldap_groups_prefix }},{{ ldap_basedn }}"
+      }
+    - { cfgkey: "ldap_base_users",
+        cfgval: "{{ ldap_users_prefix }},{{ ldap_basedn }}"
+      }
+    - { cfgkey: "ldap_display_name",
+        cfgval: "cn"
+      }
+    - { cfgkey: "ldap_dn",
+        cfgval: "{{ ldap_ownclouddn }}"
+      }
+    - { cfgkey: "ldap_email_attr",
+        cfgval: "mail"
+      }
+    - { cfgkey: "ldap_experienced_admin",
+        cfgval: "1"
+      }
+    - { cfgkey: "ldap_group_display_name",
+        cfgval: "cn"
+      }
+    - { cfgkey: "ldap_group_filter",
+        cfgval: "cn=*"
+      }
+    - { cfgkey: "ldap_group_filter_mode",
+        cfgval: "1"
+      }
+    - { cfgkey: "ldap_group_member_assoc_attribute",
+        cfgval: "memberUid"
+      }
+    - { cfgkey: "ldap_host",
+        cfgval: "{{ ldap_uristr }}"
+      }
+    - { cfgkey: "ldap_login_filter",
+        cfgval: "uid=%uid"
+      }
+    - { cfgkey: "ldap_login_filter_mode",
+        cfgval: "1"
+      }
+    - { cfgkey: "ldap_port",
+        cfgval: "{{ ldap_port }}"
+      }
+    - { cfgkey: "ldap_turn_off_cert_check",
+        cfgval: "1"
+      }
+    - { cfgkey: "ldap_user_filter_mode",
+        cfgval: "1"
+      }
+    - { cfgkey: "ldap_userlist_filter",
+        cfgval: "objectClass=posixAccount"
+      }
+  tags: ldap

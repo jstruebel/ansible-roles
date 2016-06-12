@@ -1,0 +1,4 @@
+---
+# defaults to configure nginx for basic auth using pam
+
+nginx_pam_group: true

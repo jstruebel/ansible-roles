@@ -1,0 +1,90 @@
+---
+# tasks to configure samba logins for users in ldap directory
+
+- name: mkhomedir config for pam-ldap
+  lineinfile:
+    dest: "{{ mkhomedir_file_path }}"
+    regexp: "Session-Interactive-Only"
+    owner: root
+    group: root
+    mode: 0644
+    state: absent
+    backup: yes
+  notify: update pam-auth
+  tags: ldap
+
+- name: smbpasswd-migrate config for pam-ldap
+  file:
+    path: "{{ smbpasswd_migrate_path }}"
+    state: absent
+  notify: update pam-auth
+  tags: ldap
+
+- name: smb.conf file edits
+  lineinfile:
+    dest: "{{ smb_conf_path }}"
+    regexp: "{{ item.regex }}"
+    line: "{{ item.line }}"
+    insertafter: "{{ item.insert }}"
+    owner: root
+    group: root
+    mode: 0644
+    state: present
+    backup: yes
+  with_items:
+    - { regex: '^\s*passdb backend',
+        line: '    passdb backend = ldapsam:{{ ldap_uristr }}',
+        insert: 'security' }
+    - { regex: '^\s*ldap ssl',
+        line: '    ldap ssl = off',
+        insert: 'passdb backend' }
+    - { regex: '^\s*ldap user suffix',
+        line: '    ldap user suffix = {{ ldap_users_prefix }}',
+        insert: 'ldap ssl' }
+    - { regex: '^\s*ldap machine suffix',
+        line: '    ldap machine suffix = ou=Hosts',
+        insert: 'ldap user suffix' }
+    - { regex: '^\s*ldap group suffix',
+        line: '    ldap group suffix = {{ ldap_groups_prefix }}',
+        insert: 'ldap machine suffix' }
+    - { regex: '^\s*ldap idmap suffix',
+        line: '    ldap idmap suffix = ou=Idmaps',
+        insert: 'ldap group suffix' }
+    - { regex: '^\s*ldap suffix',
+        line: '    ldap suffix = {{ ldap_basedn }}',
+        insert: 'ldap idmap suffix' }
+    - { regex: '^\s*ldap admin dn',
+        line: '    ldap admin dn = {{ ldap_sambadn }}',
+        insert: 'ldap suffix' }
+    - { regex: '^\s*idmap backend',
+        line: '    idmap backend = ldap:{{ ldap_uristr }}',
+        insert: 'ldap admin dn' }
+    - { regex: '^\s*idmap uid',
+        line: '    idmap uid = 15000-55000',
+        insert: 'idmap backend' }
+    - { regex: '^\s*idmap gid',
+        line: '    idmap gid = 15000-55000',
+        insert: 'idmap uid' }
+    - { regex: '^\s*template shell',
+        line: '    template shell = /bin/bash',
+        insert: 'idmap gid' }
+    - { regex: '^\s*username map script',
+        line: '    username map script = {{ ldapmapuser_path }}',
+        insert: 'template shell' }
+  notify: restart samba
+  tags: ldap
+
+- name: ldapmapuser.sh script file
+  template:
+    src: ldapmapuser.sh.j2
+    dest: "{{ ldapmapuser_path }}"
+    owner: root
+    group: root
+    mode: 0755
+    backup: yes
+  tags: ldap
+
+- name: samba ldap user password
+  command: "{{ smbpasswd_path }} -w {{ ldap_sambapw }}"
+  notify: restart samba
+  tags: ldap

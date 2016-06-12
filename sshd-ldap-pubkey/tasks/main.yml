@@ -1,0 +1,56 @@
+---
+# tasks to configure ssh to search ldap for authorized keys
+
+- name: required packages are at the latest
+  apt:
+    name: "{{ item }}"
+    state: latest
+    update_cache: yes
+  with_items:
+    - python-pip
+    - python-ldap
+  tags: ldap
+
+- name: required pip package ssh-ldap-pubkey
+  pip:
+    name: ssh-ldap-pubkey
+    state: present
+  tags: ldap
+
+- name: ssh-ldap-pubkey wrapper file
+  template:
+    src: ssh-ldap-pubkey-wrapper.j2
+    dest: "{{ ssh_ldap_pubkey_wrapper_path }}"
+    owner: root
+    group: staff
+    mode: 0755
+  tags: ldap
+
+- name: remove default ssh-ldap-pubkey wrapper file
+  file:
+    path: /usr/local/bin/ssh-ldap-pubkey-wrapper
+    state: absent
+  tags: ldap
+
+- name: sshd_config file edits
+  lineinfile:
+    dest: "{{ sshd_conf_path }}"
+    regexp: "{{ item.regex }}"
+    line: "{{ item.line }}"
+    insertbefore: "{{ item.insert }}"
+    owner: root
+    group: root
+    mode: 0644
+    state: present
+    backup: yes
+  with_items:
+    - { regex: '^#?AuthorizedKeysCommandUser',
+        line: 'AuthorizedKeysCommandUser nobody',
+        insert: '^#?AuthorizedKeysFile'
+      }
+    - { regex: '^#?AuthorizedKeysCommand ',
+        line: 'AuthorizedKeysCommand {{ ssh_ldap_pubkey_wrapper_path }}',
+        insert: '^#?AuthorizedKeysCommandUser'
+      }
+  notify: restart sshd
+  tags: ldap

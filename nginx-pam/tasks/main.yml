@@ -1,0 +1,34 @@
+---
+# tasks to configure nginx for basic auth using pam
+#   note: adding the nginx_user to the shadow group is potentially unsafe, but
+#         is required for the pam_unix module
+
+- name: setup nginx user
+  user:
+    name: "{{ nginx_user }}"
+    groups: shadow
+    append: yes
+    state: present
+  when: nginx_pam_group
+  tags: pam
+
+- name: configure pam
+  copy:
+    dest: "/etc/pam.d/nginx"
+    src: pam_d_nginx
+    owner: root
+    group: root
+    mode: 0644
+    backup: yes
+  tags: pam
+
+- name: configure nginx
+  copy:
+    dest: "/etc/nginx/auth_pam_params"
+    src: auth_pam_params
+    owner: root
+    group: root
+    mode: 0644
+    backup: yes
+  tags: pam
+

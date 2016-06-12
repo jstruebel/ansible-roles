@@ -1,0 +1,5 @@
+---
+# dependencies required to disable php sessionclean cron job
+
+dependencies:
+  - { role: common }

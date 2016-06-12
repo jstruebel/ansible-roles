@@ -1,0 +1,7 @@
+---
+# tasks to remove cdrom share from samba config
+
+- name: remove cdrom share
+  command: 'sed -i "/\[cdrom\]/,/^$/ d" {{ smb_conf_path }}'
+  notify: restart samba
+  tags: cdrom

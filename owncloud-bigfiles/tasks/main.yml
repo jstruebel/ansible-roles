@@ -1,0 +1,29 @@
+---
+# tasks to configure owncloud for large file uploads
+
+- name: htacces file edits
+  lineinfile:
+    dest: "{{ owncloud_htaccess_path }}"
+    regexp: "{{ item.regex }}"
+    line: "{{ item.line }}"
+    insertafter: "{{ item.insert }}"
+    owner: "{{ occ_user }}"
+    group: "{{ occ_group }}"
+    mode: 0640
+    state: present
+    backup: yes
+  with_items:
+    - { regex: '^php_value upload_max_filesize',
+        line: 'php_value upload_max_filesize 10G',
+        insert: 'mod_php5' }
+    - { regex: '^php_value post_max_size',
+        line: 'php_value post_max_size 10G',
+        insert: 'php_value upload_max_filesize' }
+    - { regex: '^php_value max_execution_time',
+        line: 'php_value max_execution_time 1800',
+        insert: 'php_value post_max_size' }
+    - { regex: '^php_value max_input_time',
+        line: 'php_value max_input_time 1800',
+        insert: 'php_value max_execution_time' }
+  tags: bigfiles
+

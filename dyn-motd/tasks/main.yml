@@ -1,0 +1,11 @@
+---
+# link /etc/motd to dynamic content in /var/run
+- name: symbolic link for motd
+  file:
+    path: /etc/motd
+    src: /var/run/motd
+    owner: root
+    group: root
+    state: link
+    force: yes
+  tags: motd

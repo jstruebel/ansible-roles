@@ -1,0 +1,5 @@
+---
+# dependencies required to configure sshd for no root login
+
+dependencies:
+  - { role: common }

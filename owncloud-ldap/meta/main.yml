@@ -1,0 +1,5 @@
+---
+# dependencies required to configure owncloud login for users in ldap database
+
+dependencies:
+  - { role: common }

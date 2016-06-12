@@ -1,0 +1,30 @@
+---
+# common variables
+# config file paths
+nslcd_conf_path: "/etc/nslcd.conf"
+ldap_conf_path: "/etc/ldap/ldap.conf"
+sshd_conf_path: "/etc/ssh/sshd_config"
+smb_conf_path: "/etc/samba/smb.conf"
+mkhomedir_file_path: "/usr/share/pam-configs/mkhomedir"
+smbpasswd_migrate_path: "/usr/share/pam-configs/smbpasswd-migrate"
+public_share_path: "/srv/storage"
+mysql_defaults_path: "/etc/mysql/debian.cnf"
+owncloud_htaccess_path: "/etc/owncloud/htaccess"
+crond_php5_path: "/etc/cron.d/php5"
+
+# executable file paths
+smbpasswd_path: "smbpasswd"
+ldapmapuser_path: "/usr/local/bin/ldapmapuser.sh"
+php_path: "php"
+occ_path: "/usr/share/owncloud/occ"
+mysql_path: "/usr/bin/mysql"
+bash_path: "/bin/bash"
+
+# general variables
+user_group: "users"
+public_share: "storage"
+ldap_users_prefix: "ou=Users"
+ldap_groups_prefix: "ou=Groups"
+occ_user: "www-data"
+occ_group: "www-data"
+nginx_user: "www-data"

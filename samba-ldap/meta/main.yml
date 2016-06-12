@@ -1,0 +1,6 @@
+---
+# dependencies required to configure samba logins for users in ldap directory
+
+dependencies:
+  - { role: common }
+  - { role: login-ldap, mkhomedir_file_force: no }

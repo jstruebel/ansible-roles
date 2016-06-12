@@ -1,0 +1,47 @@
+---
+# tasks to configure samba storage share for shared workgroup
+
+- name: disable samba null passwords option
+  lineinfile:
+    dest: "{{ smb_conf_path }}"
+    regexp: "null passwords"
+    owner: root
+    group: root
+    mode: 0644
+    state: absent
+    backup: yes
+  notify: restart samba
+  tags: shared
+
+- name: smb.conf file edits
+  lineinfile:
+    dest: "{{ smb_conf_path }}"
+    regexp: "{{ item.regex }}"
+    line: "{{ item.line }}"
+    insertafter: "{{ item.insert }}"
+    owner: root
+    group: root
+    mode: 0644
+    state: present
+    backup: yes
+  with_items:
+    - { regex: '^\s*force group',
+        line: '    force group = users',
+        insert: '\[{{ public_share }}\]' }
+    - { regex: '^\s*force create mode',
+        line: '    force create mode = 0060',
+        insert: 'force group' }
+    - { regex: '^\s*force directory mode',
+        line: '    force directory mode = 0060',
+        insert: 'force create mode' }
+  notify: restart samba
+  tags: shared
+
+- name: no sticky bit on shared folder
+  file:
+    path: "{{ public_share_path }}"
+    owner: root
+    group: "{{ user_group }}"
+    mode: 0775
+    state: directory
+  tags: shared

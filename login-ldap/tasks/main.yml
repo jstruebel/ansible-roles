@@ -1,0 +1,150 @@
+---
+# tasks to configure logins for users in ldap directory
+
+- name: mkhomedir config for pam-ldap
+  copy:
+    src: mkhomedir
+    dest: "{{ mkhomedir_file_path }}"
+    force: "{{ mkhomedir_file_force }}"
+    owner: root
+    group: root
+    mode: 0644
+  notify: update pam-auth
+  tags: ldap
+
+- name: nslcd configuration options
+  debconf:
+    name: nslcd
+    question: "{{ item.name }}"
+    value: "{{ item.value }}"
+    vtype: "{{ item.vtype }}"
+  with_items:
+    - { name: 'nslcd/ldap-starttls',
+        value: 'false',
+        vtype: 'boolean'
+      }
+    - { name: 'nslcd/ldap-reqcert',
+        value: 'allow',
+        vtype: 'select'
+      }
+    - { name: 'nslcd/ldap-base',
+        value: "{{ ldap_basedn }}",
+        vtype: 'string'
+      }
+    - { name: 'nslcd/ldap-auth-type',
+        value: 'none',
+        vtype: 'select'
+      }
+    - { name: 'nslcd/ldap-uris',
+        value: "{{ ldap_uristr }}",
+        vtype: 'string'
+      }
+  tags: ldap
+
+- name: libnss-ldapd configuration options
+  debconf:
+    name: "libnss-lapd:{{ item[0].arch }}"
+    question: "{{ item[1].name }}"
+    value: "{{ item[1].value }}"
+    vtype: "{{ item[1].vtype }}"
+  with_nested:
+    - [ { sys: 'x86_64', arch: 'amd64' },
+        { sys: 'i386', arch: 'i386' }
+      ]
+    - [ { name: 'libnss-ldapd/nsswitch',
+          value: 'group, passwd, shadow',
+          vtype: 'multiselect'
+        },
+        { name: 'libnss-ldapd/clean-nsswitch',
+          value: 'false',
+          vtype: 'boolean'
+        }
+      ]
+  when: ansible_architecture == item[0].sys
+  tags: ldap
+
+- name: required packages are at the latest
+  apt:
+    name: "{{ item }}"
+    state: latest
+    update_cache: yes
+  with_items:
+    - libnss-ldapd
+    - libpam-ldapd
+    - nslcd
+    - nscd
+  tags: ldap
+
+- name: nslcd.conf file edits
+  lineinfile:
+    dest: "{{ nslcd_conf_path }}"
+    regexp: "{{ item.regex }}"
+    line: "{{ item.line }}"
+    insertafter: "{{ item.insert }}"
+    owner: root
+    group: root
+    mode: 0600
+    state: present
+    backup: yes
+  with_items:
+    - { regex: '^#?uri',
+        line: 'uri {{ ldap_uristr }}',
+        insert: '# The location'
+      }
+    - { regex: '^#?base',
+        line: 'base {{ ldap_basedn }}',
+        insert: '# The search base'
+      }
+    - { regex: '^#?rootpwmoddn',
+        line: 'rootpwmoddn {{ ldap_binddn }}',
+        insert: '# The DN used'
+      }
+    - { regex: '^#?rootpwmodpw',
+        line: 'rootpwmodpw {{ ldap_bindpw }}',
+        insert: 'rootpwmoddn'
+      }
+  register: result
+  ignore_errors: True
+  notify: restart nslcd
+  tags: ldap
+
+- name: nslcd.conf configuration file
+  template:
+    src: nslcd.conf.j2
+    dest: "{{ nslcd_conf_path }}"
+    owner: root
+    group: root
+    mode: 0600
+    backup: yes
+  when: result|failed
+  notify: restart nslcd
+  tags: ldap
+
+- name: ldap.conf file edits
+  lineinfile:
+    dest: "{{ ldap_conf_path }}"
+    regexp: "{{ item.regex }}"
+    line: "{{ item.line }}"
+    owner: root
+    group: root
+    mode: 0644
+    state: present
+    backup: yes
+  with_items:
+    - { regex: '^#?BASE',        line: 'BASE            {{ ldap_basedn }}' }
+    - { regex: '^#?URI',         line: 'URI             {{ ldap_uristr }}' }
+    - { regex: '^#?TLS_REQCERT', line: 'TLS_REQCERT     allow' }
+  register: result
+  ignore_errors: True
+  tags: ldap
+
+- name: ldap.conf configuration file
+  template:
+    src: ldap.conf.j2
+    dest: "{{ ldap_conf_path }}"
+    owner: root
+    group: root
+    mode: 0644
+    backup: yes
+  when: result|failed
+  tags: ldap

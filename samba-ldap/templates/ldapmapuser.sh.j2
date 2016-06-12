@@ -1,0 +1,4 @@
+#!/bin/sh
+ldapsearch -x -LLL -H {{ ldap_uristr }} -b "{{ ldap_basedn }}" \
+  -s sub "(&(cn=$1)(objectclass=posixAccount))" | grep uid: | \
+  cut -d: -f 2 | sed 's/^\s*//'

@@ -1,0 +1,5 @@
+---
+# dependencies required to remove cdrom share from samba config
+
+dependencies:
+  - { role: common }

@@ -1,0 +1,7 @@
+---
+# tasks to remove homes share from samba config
+
+- name: remove homes share
+  command: 'sed -i "/\[homes\]/,/^$/ d" {{ smb_conf_path }}'
+  notify: restart samba
+  tags: homes

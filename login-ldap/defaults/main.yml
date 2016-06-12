@@ -1,0 +1,4 @@
+---
+# variable defaults used to configure logins for for users in ldap directory
+
+mkhomedir_file_force: yes

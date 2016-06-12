@@ -1,0 +1,7 @@
+---
+# dependencies required to configure nginx for basic auth using pam
+
+dependencies:
+  - { role: common }
+  - { role: login-ldap }
+  - { role: nginx-pam, nginx_pam_group: false }

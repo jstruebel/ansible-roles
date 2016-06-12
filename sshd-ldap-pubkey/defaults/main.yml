@@ -1,0 +1,4 @@
+---
+# variable defaultss used to configure ssh to search ldap for authorized keys
+
+ssh_ldap_pubkey_wrapper_path: "/usr/bin/ssh-ldap-pubkey-wrapper"

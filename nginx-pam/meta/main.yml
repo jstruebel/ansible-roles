@@ -1,0 +1,5 @@
+---
+# dependencies required to configure nginx for basic auth using pam
+
+dependencies:
+  - { role: common }

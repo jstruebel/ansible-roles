@@ -1,0 +1,23 @@
+---
+# tasks to configure samba storage share for public access
+
+- name: smb.conf file edits
+  lineinfile:
+    dest: "{{ smb_conf_path }}"
+    regexp: "{{ item.regex }}"
+    line: "{{ item.line }}"
+    insertafter: "{{ item.insert }}"
+    owner: root
+    group: root
+    mode: 0644
+    state: present
+    backup: yes
+  with_items:
+    - { regex: '^\s*guest ok',
+        line: '    guest ok = yes',
+        insert: '\[{{ public_share }}\]' }
+    - { regex: '^\s*map to guest',
+        line: '    map to guest = bad user',
+        insert: 'guest account' }
+  notify: restart samba
+  tags: public

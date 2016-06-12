@@ -1,0 +1,5 @@
+---
+# dependencies required to configure owncloud for large file uploads
+
+dependencies:
+  - { role: common }

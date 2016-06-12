@@ -1,0 +1,5 @@
+---
+# dependencies required to configure ssh to search ldap for authorized keys
+
+dependencies:
+  - { role: common }

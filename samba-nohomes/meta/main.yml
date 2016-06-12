@@ -1,0 +1,5 @@
+---
+# dependencies required to remove homes share from samba config
+
+dependencies:
+  - { role: common }

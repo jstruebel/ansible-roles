@@ -1,0 +1,6 @@
+---
+# dependencies required to configure samba storage share for public access
+
+dependencies:
+  - { role: common }
+  - { role: samba-shared }

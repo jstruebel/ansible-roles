@@ -1,0 +1,39 @@
+---
+# tasks to configure sshd for no root login
+#   note: create the altadmin_pass variable value with a command such as
+#   python -c 'import crypt; print crypt.crypt("My Password", "$1$SomeSalt$")'
+#   or
+#   python -c 'import crypt, getpass; print crypt.crypt(getpass.getpass(), "$1$SomeSalt$")'
+
+- name: ensure sudo is installed
+  apt:
+    name: sudo
+    update_cache: yes
+    state: latest
+  tags: noroot
+
+- name: setup alternate admin user
+  user:
+    comment: "Admin User via SSH"
+    name: "{{ altadmin_user }}"
+    password: "{{ altadmin_pass }}"
+    group: users
+    groups: sudo
+    createhome: yes
+    shell: "{{ bash_path }}"
+    state: present
+  tags: noroot
+
+- name: sshd_config file edits
+  lineinfile:
+    dest: "{{ sshd_conf_path }}"
+    regexp: "^#?PermitRootLogin"
+    line: "PermitRootLogin no"
+    owner: root
+    group: root
+    mode: 0644
+    state: present
+    backup: yes
+  notify: restart sshd
+  tags: noroot
+

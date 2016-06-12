@@ -1,0 +1,48 @@
+---
+# tasks to configure nginx for basic auth using ldap
+
+- name: setup nginx user
+  user:
+    name: "{{ nginx_user }}"
+    groups: ''
+    state: present
+  tags: ldap
+
+- name: nginx pam.d edits
+  lineinfile:
+    dest: "/etc/pam.d/nginx"
+    regexp: "{{ item.regex }}"
+    line: "{{ item.line }}"
+    insertafter: "{{ item.insert }}"
+    owner: root
+    group: root
+    mode: 0644
+    state: present
+    backup: yes
+  with_items:
+    - { regex: '^# The default ordering',
+        line: '# The default ordering in common-account did not allow nginx authentication to succeed.',
+        insert: '@include common-auth'
+      }
+    - { regex: '^#?@include common-account',
+        line: '#@include common-account',
+        insert: '@include common-auth'
+      }
+    - { regex: 'pam_unix.so',
+        line: 'account [success=2 new_authtok_reqd=done default=ignore] pam_unix.so',
+        insert: '@include common-account'
+      }
+    - { regex: 'pam_ldap.so',
+        line: 'account [success=1 new_authtok_reqd=done ignore=ignore user_unknown=ignore authinfo_unavail=ignore default=bad] pam_ldap.so minimum_uid=1000',
+        insert: 'pam_unix.so'
+      }
+    - { regex: 'pam_deny.so',
+        line: 'account requisite pam_deny.so',
+        insert: 'pam_ldap.so'
+      }
+    - { regex: 'pam_permit.so',
+        line: 'account required  pam_permit.so',
+        insert: 'pam_deny.so'
+      }
+  tags: ldap
+

@@ -1,0 +1,12 @@
+---
+# tasks to disable php sessionclean cron job
+
+- name: disable cron job
+  copy:
+    dest: "{{ crond_php5_path }}"
+    src: php5
+    force: yes
+    mode: 0644
+    owner: root
+    group: root
+  tags: phpsessionclean
