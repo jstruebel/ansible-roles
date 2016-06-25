@@ -11,6 +11,9 @@ public_share_path: "/srv/storage"
 mysql_defaults_path: "/etc/mysql/debian.cnf"
 owncloud_htaccess_path: "/etc/owncloud/htaccess"
 crond_php5_path: "/etc/cron.d/php5"
+main_cf_path: "/etc/postfix/main.cf"
+sasl_passwd_path: "/etc/postfix/sasl_passwd"
+stunnel_conf_path: "/etc/stunnel/stunnel.conf"
 
 # executable file paths
 smbpasswd_path: "smbpasswd"

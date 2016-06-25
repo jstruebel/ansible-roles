@@ -35,3 +35,16 @@
     name: nginx
     state: restarted
 
+- name: restart postfix
+  service:
+    name: postfix
+    state: restarted
+
+- name: postmap sasl_passwd
+  command: "postmap hash:{{ sasl_passwd_path }}"
+
+- name: restart stunnel
+  service:
+    name: stunnel4
+    state: restarted
+

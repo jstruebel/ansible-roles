@@ -1,0 +1,5 @@
+---
+# dependencies required to configure postfix for sending mail through relay host
+
+dependencies:
+  - { role: common }

@@ -1,0 +1,6 @@
+# destination			credentials
+{% if postfix_tunnel %}
+[127.0.0.1]:{{ postfix_tunnel_port }}		{{ postfix_relay_creds }}
+{% else %}
+{{ postfix_relay_host }}		{{ postfix_relay_creds }}
+{% endif %}

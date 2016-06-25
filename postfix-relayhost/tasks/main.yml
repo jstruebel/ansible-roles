@@ -1,0 +1,100 @@
+---
+# tasks to configure postfix for sending mail through relay host
+
+- name: libsasl2
+  apt:
+    name: libsasl2-modules
+    state: latest
+  tags: postfix
+
+- name: postfix main.cf file relayhost tunnel edits
+  lineinfile:
+    dest: "{{ main_cf_path }}"
+    regexp: '^#?\s*relayhost'
+    line: 'relayhost = [127.0.0.1]:{{ postfix_tunnel_port }}'
+    owner: root
+    group: root
+    mode: 0644
+    state: present
+    backup: yes
+  when: postfix_tunnel
+  notify: restart postfix
+  tags: postfix
+
+- name: postfix main.cf file relayhost direct edits
+  lineinfile:
+    dest: "{{ main_cf_path }}"
+    regexp: '^#?\s*relayhost'
+    line: 'relayhost = {{ postfix_relay_host }}'
+    owner: root
+    group: root
+    mode: 0644
+    state: present
+    backup: yes
+  when: not postfix_tunnel
+  notify: restart postfix
+  tags: postfix
+
+- name: postfix main.cf file edits
+  lineinfile:
+    dest: "{{ main_cf_path }}"
+    regexp: "{{ item.regex }}"
+    line: "{{ item.line }}"
+    insertafter: "{{ item.insert }}"
+    owner: root
+    group: root
+    mode: 0644
+    state: present
+    backup: yes
+  with_items:
+    - { regex: '^#?\s*smtp_sasl_auth_enable',
+        line: 'smtp_sasl_auth_enable = {{ smtp_sasl_auth_en }}',
+        insert: 'relayhost' }
+    - { regex: '^#?\s*smtp_sasl_security_options',
+        line: 'smtp_sasl_security_options = {{ smtp_sasl_security_options }}',
+        insert: 'smtp_sasl_auth_enable' }
+    - { regex: '^#?\s*smtp_sasl_password_maps',
+        line: 'smtp_sasl_password_maps = hash:{{ sasl_passwd_path }}',
+        insert: 'smtp_sasl_security_options' }
+    - { regex: '^#?\s*smtp_tls_security_level',
+        line: 'smtp_tls_security_level = {{ smtp_tls_security_level }}',
+        insert: 'smtp_sasl_password_maps' }
+  notify: restart postfix
+  tags: postfix
+
+- name: postfix main.cf file myhostname edit
+  lineinfile:
+    dest: "{{ main_cf_path }}"
+    regexp: '^#?\s*myhostname\s*=\s*(.*)$'
+    line: '#myhostname = \1'
+    backrefs: yes
+    owner: root
+    group: root
+    mode: 0644
+    state: present
+    backup: yes
+  notify: restart postfix
+  tags: postfix
+
+- name: sasl password map file
+  template:
+    src: sasl_passwd.j2
+    dest: "{{ sasl_passwd_path }}"
+    owner: root
+    group: root
+    mode: 0600
+    backup: yes
+  notify: postmap sasl_passwd
+  tags: postfix
+
+- name: stunnel service conf file
+  template:
+    src: smtp-tls-wrapper.conf.j2
+    dest: "{{ stunnel_conf_path | dirname }}/smtp-tls-wrapper.conf"
+    owner: root
+    group: root
+    mode: 0644
+    backup: yes
+  when: postfix_tunnel
+  notify: restart stunnel
+  tags: postfix

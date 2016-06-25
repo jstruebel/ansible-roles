@@ -1,0 +1,8 @@
+---
+# defaults to configure postfix for sending mail through relay host
+
+postfix_tunnel: true
+postfix_tunnel_port: "12330"
+smtp_sasl_auth_en: "yes"
+smtp_sasl_security_options: "noanonymous"
+smtp_tls_security_level: "may"
