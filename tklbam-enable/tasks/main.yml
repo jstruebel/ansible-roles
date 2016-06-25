@@ -1,0 +1,31 @@
+---
+# tasks to configure tklbam for daily backups
+
+- name: initialize tklbam
+  command: "{{ tklbam_init_path }} {{ tklhub_apikey }}"
+  ignore_errors: yes
+  tags: tklbam
+
+- name: enable daily tklbam cron job
+  file:
+    path: "{{ tklbam_cron_path }}"
+    owner: root
+    group: root
+    mode: 0755
+    state: file
+  tags: tklbam
+
+- name: tklbam overrides configuration
+  lineinfile:
+    dest: "{{ tklbam_overrides_path }}"
+    regexp: "{{ item }}"
+    line: "{{ item }}"
+    insertafter: EOF
+    owner: root
+    group: root
+    mode: 0644
+    state: present
+    create: yes
+    backup: yes
+  with_items: "{{ tklbam_overrides }}"
+  tags: tklbam
