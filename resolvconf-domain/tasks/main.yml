@@ -1,0 +1,33 @@
+---
+# tasks to configure search domain for resolv.conf
+
+- name: resolvconf head file edits
+  lineinfile:
+    dest: "{{ resolvconf_head_path }}"
+    regexp: '^#?\s*search {{ host_domain }}'
+    line: "search {{ host_domain }}"
+    insertafter: EOF
+    owner: root
+    group: root
+    mode: 0644
+    state: present
+    backup: yes
+  register: result
+  ignore_errors: True
+  notify: restart network
+  tags: resolvconf
+
+- name: resolv.conf file edits
+  lineinfile:
+    dest: "{{ resolv_conf_path }}"
+    regexp: '^#?\s*search {{ host_domain }}'
+    line: "search {{ host_domain }}"
+    insertbefore: BOF
+    owner: root
+    group: root
+    mode: 0644
+    state: present
+    backup: yes
+  when: result|failed
+  notify: restart network
+  tags: resolvconf

@@ -1,0 +1,5 @@
+---
+# dependencies required to configure search domain in resolv.conf
+
+dependencies:
+  - { role: common }
