@@ -1,0 +1,19 @@
+---
+# tasks to configure timezone
+
+- name: timezone configuration file
+  template:
+    src: timezone.j2
+    dest: "{{ timezone_path }}"
+    owner: root
+    group: root
+    mode: 0644
+    backup: yes
+  register: tz_result
+  notify: restart cron
+  tags: timezone
+
+- name: tzdata debconf
+  command: "{{ dpkg_reconf_path }} -f noninteractive tzdata"
+  when: tz_result.changed
+  tags: timezone

@@ -48,3 +48,8 @@
     name: stunnel4
     state: restarted
 
+- name: restart cron
+  service:
+    name: cron
+    state: restarted
+

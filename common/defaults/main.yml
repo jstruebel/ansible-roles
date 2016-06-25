@@ -15,6 +15,7 @@ main_cf_path: "/etc/postfix/main.cf"
 sasl_passwd_path: "/etc/postfix/sasl_passwd"
 stunnel_conf_path: "/etc/stunnel/stunnel.conf"
 tklbam_overrides_path: "/etc/tklbam/overrides"
+timezone_path: "/etc/timezone"
 
 # executable file paths
 smbpasswd_path: "smbpasswd"
@@ -25,6 +26,7 @@ mysql_path: "/usr/bin/mysql"
 bash_path: "/bin/bash"
 tklbam_init_path: "/usr/bin/tklbam-init"
 tklbam_cron_path: "/etc/cron.daily/tklbam-backup"
+dpkg_reconf_path: "dpkg-reconfigure"
 
 # general variables
 user_group: "users"
