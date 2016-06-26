@@ -29,6 +29,7 @@ bash_path: "/bin/bash"
 tklbam_init_path: "/usr/bin/tklbam-init"
 tklbam_cron_path: "/etc/cron.daily/tklbam-backup"
 dpkg_reconf_path: "dpkg-reconfigure"
+secalerts_sh_path: "/usr/lib/inithooks/bin/secalerts.sh"
 
 # general variables
 user_group: "users"

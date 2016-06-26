@@ -1,0 +1,6 @@
+---
+# tasks to configure tkl security alerts
+
+- name: initialize secalerts
+  command: "{{ secalerts_sh_path }} {{ admin_email }}"
+  tags: secalerts

@@ -1,0 +1,5 @@
+---
+# dependencies required to configure tkl security alerts
+
+dependencies:
+  - { role: common }
