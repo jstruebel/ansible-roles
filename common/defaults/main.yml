@@ -18,6 +18,7 @@ tklbam_overrides_path: "/etc/tklbam/overrides"
 timezone_path: "/etc/timezone"
 resolvconf_head_path: "/etc/resolvconf/resolv.conf.d/head"
 resolv_conf_path: "/etc/resolv.conf"
+lmhosts_path: "/etc/samba/lmhosts"
 
 # executable file paths
 smbpasswd_path: "smbpasswd"

@@ -1,0 +1,12 @@
+---
+# tasks to configure lmhosts file
+
+- name: timezone configuration file
+  template:
+    src: lmhosts.j2
+    dest: "{{ lmhosts_path }}"
+    owner: root
+    group: root
+    mode: 0644
+    backup: yes
+  tags: lmhosts
